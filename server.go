@@ -1,5 +1,4 @@
-// Package server implements server library
-package server
+package main
 
 import (
 	"log"
@@ -10,12 +9,18 @@ import (
 )
 
 // Server type for server
-type Server struct {
-	Mux *http.ServeMux
+type server struct {
+	router *http.ServeMux
+}
+
+// NewServer returns new server
+func NewServer() *server {
+	mux := http.NewServeMux()
+	return &server{router: mux}
 }
 
 // HandleSignals handles os signals
-func (s *Server) HandleSignals() {
+func (s *server) handleSignals() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan,
 		syscall.SIGHUP,
@@ -42,4 +47,11 @@ func (s *Server) HandleSignals() {
 
 	code := <-exitChan
 	os.Exit(code)
+}
+
+func (s *server) defaultHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	}
+
 }

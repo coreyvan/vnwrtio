@@ -3,15 +3,18 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/coreyvan/vnwrtio/server"
 )
 
 func main() {
-	s := server.Server{}
+	port := ":80"
+	s := NewServer()
 
-	go s.HandleSignals()
+	go s.handleSignals()
+	s.routes()
 
-	log.Println("Started server listening on port 8000")
-	http.ListenAndServe(":8000", s.Mux)
+	log.Println("Started server listening on port", port)
+	err := http.ListenAndServe(port, s.router)
+	if err != nil {
+		log.Printf("error while listening: %v", err)
+	}
 }
