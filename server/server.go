@@ -11,7 +11,7 @@ import (
 
 // Server type for server
 type Server struct {
-	mux *http.ServeMux
+	Mux *http.ServeMux
 }
 
 // HandleSignals handles os signals
@@ -31,7 +31,7 @@ func (s *Server) HandleSignals() {
 			s := <-signalChan
 			switch s {
 			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				log.Println("Received shut signal:", s)
+				log.Println("Received shutdown signal:", s)
 				exitChan <- 0
 			default:
 				log.Println("Received unknown signal:", s)
