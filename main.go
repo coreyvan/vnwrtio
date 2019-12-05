@@ -1,8 +1,15 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"net/http"
+	"regexp"
+)
+
+var (
+	templates = template.Must(template.ParseFiles("templates/view.html", "templates/edit.html", "templates/index.html"))
+	validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 )
 
 func main() {
