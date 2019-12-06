@@ -1,0 +1,19 @@
+//Variable overrides
+$body-bg: #c9c9c9;
+$theme-colors: (
+    "primary": #12022b
+);
+
+$font-family-base: 'Space Mono', monospace;
+
+.jumbotron {
+    background-color: #ffffff !important;
+    border-top: 3px solid rgb(219, 219, 219); 
+}
+
+.navbar {
+    text-transform: uppercase;
+};
+//Bootstrap Sass files
+@import "node_modules/bootstrap/scss/bootstrap";
+
