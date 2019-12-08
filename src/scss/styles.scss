@@ -4,7 +4,7 @@ $theme-colors: (
     "primary": #12022b
 );
 
-$font-family-base: 'Space Mono', monospace;
+$font-family-base: 'Roboto Mono', monospace;
 
 .jumbotron {
     background-color: #ffffff !important;
@@ -14,6 +14,22 @@ $font-family-base: 'Space Mono', monospace;
 .navbar {
     text-transform: uppercase;
 };
+
+.container-fluid{
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+    margin: 0 !important;
+}
+
+body {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+html {
+    padding: 0 !important;
+    margin: 0 !important;
+}
 //Bootstrap Sass files
 @import "node_modules/bootstrap/scss/bootstrap";
 
