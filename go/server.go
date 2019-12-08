@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 // Server type for server
@@ -57,14 +56,36 @@ func (s *Server) defaultHandler() http.HandlerFunc {
 
 }
 
+type Page struct {
+	Title string
+	Cards []Card
+}
+
+type Card struct {
+	ID string
+	Text string
+	Link Link
+}
+
+type Link struct {
+	Text string
+	Link string
+}
+
 func (s *Server) homeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		renderHomeTemplate(w, "index", time.Now())
+		cards := []Card{
+			Card{"1", "card 1 text", Link{"text", "link"}},
+			Card{"2", "card 2 text", Link{"text", "link"}},
+			Card{"3", "card 3 text", Link{"text", "link"}},
+		}
+		p := Page{Title: "Corey Van Woert", Cards: cards}
+		renderPageTemplate(w, "index", p)
 	}
 }
 
-func renderHomeTemplate(w http.ResponseWriter, tmpl string, t time.Time) {
-	err := templates.ExecuteTemplate(w, tmpl+".html", t)
+func renderPageTemplate(w http.ResponseWriter, tmpl string, p Page) {
+	err := templates.ExecuteTemplate(w, tmpl+".html", p)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
