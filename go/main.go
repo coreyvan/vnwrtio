@@ -7,34 +7,42 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	htmlBase  = "../src/"
-	cssBase   = "../src/css/"
-	jsBase    = "../src/js/"
+	// htmlBase  = "../src/"
+	// cssBase   = "../src/css/"
+	// jsBase    = "../src/js/"
+	htmlBase  = "./templates/"
+	cssBase   = "./css/"
+	jsBase    = "./js/"
 	templates = template.Must(template.ParseFiles(htmlBase + "index.html"))
+	log       = logrus.New()
 )
 
 func init() {
 
 }
 func main() {
+
+	log.Formatter = new(logrus.TextFormatter)
+	log.Formatter.(*logrus.TextFormatter).FullTimestamp = true
+
 	port := ":80"
 	s := NewServer()
 
 	go s.handleSignals()
 	s.routes()
 
-	log.WithFields(log.Fields{
+	log.WithFields(logrus.Fields{
 		"package":  "main",
 		"function": "main",
 		"port":     port,
 	}).Info("Started server")
 	err := http.ListenAndServe(port, s.router)
 	if err != nil {
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "main",
 			"err":      err,
@@ -77,14 +85,14 @@ func (s *Server) handleSignals() {
 			s := <-signalChan
 			switch s {
 			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				log.WithFields(log.Fields{
+				log.WithFields(logrus.Fields{
 					"package":  "main",
 					"function": "handleSignals",
 					"signal":   s,
 				}).Info("Received shutdown signal")
 				exitChan <- 0
 			default:
-				log.WithFields(log.Fields{
+				log.WithFields(logrus.Fields{
 					"package":  "main",
 					"function": "handleSignals",
 					"signal":   s,
@@ -126,11 +134,11 @@ type Link struct {
 
 func (s *Server) homeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "homeHandler",
 			"method":   r.Method,
-		}).Info("Request to", r.URL.Path)
+		}).Info("Request to ", r.URL.Path)
 		cards := []Card{
 			Card{"1", "card 1 text", Link{"text", "link"}},
 			Card{"2", "card 2 text", Link{"text", "link"}},
@@ -145,7 +153,7 @@ func (s *Server) homeHandler() http.HandlerFunc {
 func renderPageTemplate(w http.ResponseWriter, tmpl string, p Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
 	if err != nil {
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "renderPageTemplate",
 			"template": tmpl,
