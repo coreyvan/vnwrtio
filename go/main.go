@@ -137,7 +137,7 @@ func (s *Server) homeHandler() http.HandlerFunc {
 			Card{"3", "card 3 text", Link{"text", "link"}},
 		}
 		p := Page{Title: "Corey Van Woert", Cards: cards}
-		renderPageTemplate(w, "sharks", p)
+		renderPageTemplate(w, "index", p)
 
 	}
 }
