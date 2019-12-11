@@ -14,11 +14,12 @@ var (
 	// htmlBase  = "../src/"
 	// cssBase   = "../src/css/"
 	// jsBase    = "../src/js/"
-	htmlBase  = "./templates/"
-	cssBase   = "./css/"
-	jsBase    = "./js/"
-	templates = template.Must(template.ParseFiles(htmlBase + "index.html"))
-	log       = logrus.New()
+	htmlBase   = "./src/templates/"
+	cssBase    = "./src/css/"
+	jsBase     = "./src/js/"
+	assetsBase = "./src/assets/"
+	// templates  = template.Must(template.ParseFiles(htmlBase + "index.html"))
+	log = logrus.New()
 )
 
 func init() {
@@ -66,6 +67,7 @@ func (s *Server) routes() {
 	s.router.Handle("/", s.homeHandler())
 	s.router.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(cssBase))))
 	s.router.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir(jsBase))))
+	s.router.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(assetsBase))))
 }
 
 // HandleSignals handles os signals
@@ -121,9 +123,8 @@ type Page struct {
 
 // Card data model for HTML card
 type Card struct {
-	ID   string
-	Text string
-	Link Link
+	Title string
+	List  []string
 }
 
 // Link data model for HTML link
@@ -140,18 +141,25 @@ func (s *Server) homeHandler() http.HandlerFunc {
 			"method":   r.Method,
 		}).Info("Request to ", r.URL.Path)
 		cards := []Card{
-			Card{"1", "card 1 text", Link{"text", "link"}},
-			Card{"2", "card 2 text", Link{"text", "link"}},
-			Card{"3", "card 3 text", Link{"text", "link"}},
+			Card{"Code", []string{"Go"}},
+			Card{"Deploy", []string{"Docker", "Terraform"}},
 		}
 		p := Page{Title: "Corey Van Woert", Cards: cards}
-		renderPageTemplate(w, "index", p)
+		tmpl, err := template.ParseFiles(htmlBase + "index.html")
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"package":  "main",
+				"function": "homeHandler",
+				"template": htmlBase + "index.html",
+			}).Errorf("Could not execute template: %v", err)
+		}
+		renderPageTemplate(w, tmpl, p)
 
 	}
 }
 
-func renderPageTemplate(w http.ResponseWriter, tmpl string, p Page) {
-	err := templates.ExecuteTemplate(w, tmpl+".html", p)
+func renderPageTemplate(w http.ResponseWriter, tmpl *template.Template, p Page) {
+	err := tmpl.Execute(w, p)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"package":  "main",

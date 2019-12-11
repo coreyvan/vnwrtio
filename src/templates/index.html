@@ -1,9 +1,11 @@
 {{ define "head"}}
+
 <head>
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
+  <!-- <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet"> -->
+  <link href="https://fonts.googleapis.com/css?family=Inknut+Antiqua:400,600|Lato:200&display=swap" rel="stylesheet">
   <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/bootstrap.css">
   <link rel="stylesheet" href="/css/styles.css">
@@ -18,7 +20,7 @@
   </button>
   <div class="collapse navbar-collapse mx-auto" id="navbarSupportedContent">
     <ul class="navbar-nav mx-auto">
-      <li class="nav-item">
+      <li class="nav-item active">
         <a class="nav-link" href="#">About</a>
       </li>
       <li class="nav-item">
@@ -31,31 +33,41 @@
 
 {{ define "hero"}}
 <div class="jumbotron">
-  <h1 class="display-4">Code. Security. Dogs.</h1>
-  <p class="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa voluptatibus fugiat unde, non
-    perferendis, molestias voluptates necessitatibus quos officiis, rem reiciendis magnam ut expedita similique enim
-    tenetur voluptatem? Nam, eligendi.</p>
-  <p class="lead">
-    <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
-  </p>
+  <div class="row mx-1">
+    <div class="col-md-3 col-sm-12">
+      <img src="assets/corey.jpg" class="mx-1 shadow-5">
+    </div>
+    <div class="col-md-9 col-sm-12">
+      <h1 class="display-6" id="greeting">Hi. I'm Corey Van Woert</h1>
+      <p class="lead">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa voluptatibus fugiat unde, non
+        perferendis, molestias voluptates necessitatibus quos officiis, rem reiciendis magnam ut expedita similique enim
+        tenetur voluptatem? Nam, eligendi.</p>
+      <p class="lead">
+        <a class="btn btn-primary btn-lg shadow-5" href="#" role="button">Learn more</a>
+      </p>
+    </div>
+  </div>
 </div>
 {{end}}
 
 {{define "card-row"}}
 <div class="row mx-1">
-  
+
   {{ range . }}
-  <div class="col-sm-12 col-md-4"> 
+  <div class="col-sm-12 col-md-4">
     <div class="card mb-4">
       <div class="card-body text-center">
-        <h5 class="card-title">Card {{.ID}}</h5>
-        <p class="card-text">{{.Text}}</p>
-        <a href="#" class="card-link">{{.Link.Text}}</a>
+        <h5 class="card-title">{{.Title}}</h5>
+        <ul>
+          {{ range .List}}
+          <li class="card-text">{{.}}</li>
+          {{end}}
+        </ul>
       </div>
     </div>
   </div>
   {{end}}
-  
+
 </div>
 {{end}}
 
@@ -98,20 +110,21 @@
 <!doctype html>
 <html lang="en">
 
-  {{template "head" .Title}}
-  <body>
-    <div id="container" class="container-fluid mx-0">
-      {{ template "nav"}}
-      {{ template "hero"}}
-      {{ template "card-row" .Cards}}
-      {{ template "content"}}
-      {{ template "footer"}}
-    </div>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/popper.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
-  </body>
+{{template "head" .Title}}
+
+<body>
+  <div id="container" class="container-fluid mx-0">
+    {{ template "nav"}}
+    {{ template "hero"}}
+    <!-- {{ template "card-row" .Cards}} -->
+    <!-- {{ template "content"}} -->
+    {{ template "footer"}}
+  </div>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/popper.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+</body>
 
 </html>
