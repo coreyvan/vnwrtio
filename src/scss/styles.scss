@@ -1,57 +1,138 @@
 //Variable overrides
-$body-bg: #e2d5c4;
-$theme-colors: (
-    "primary": #3d5f6a
+$theme-colors: ("primary": #3d5f6a,
+    "highlight": #ce9256,
+    "secondary": #1a3439,
 );
 
-$font-family-base: 'Lato';
+@function color($color-name) {
+    @return map-get($theme-colors, $color-name)
+}
 
-.lead {
-    font-weight: 200 !important;
+$font-family-base: 'Lato',
+sans-serif;
+
+.navbar-brand {
+    vertical-align: middle;
 }
 
 .jumbotron {
-    background-color: #e2d5c4 !important;
-    border-top: 3px solid rgb(219, 219, 219); 
+    background-color: color(secondary) !important;
+    // border-top: 3px solid rgb(219, 219, 219); 
 }
 
 .shadow-5 {
-    box-shadow: 0 1px 1px rgba(0,0,0,0.12), 
-                0 2px 2px rgba(0,0,0,0.12), 
-                0 4px 4px rgba(0,0,0,0.12), 
-                0 8px 8px rgba(0,0,0,0.12),
-                0 16px 16px rgba(0,0,0,0.12);
-  }
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12),
+        0 2px 2px rgba(0, 0, 0, 0.12),
+        0 4px 4px rgba(0, 0, 0, 0.12),
+        0 8px 8px rgba(0, 0, 0, 0.12),
+        0 16px 16px rgba(0, 0, 0, 0.12);
+}
 
-#greeting {
+.shadow-4 {
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12),
+        0 2px 2px rgba(0, 0, 0, 0.12),
+        0 4px 4px rgba(0, 0, 0, 0.12),
+        0 8px 8px rgba(0, 0, 0, 0.12);
+}
+
+.active>a.nav-link {
+    border-bottom: 3px solid color(highlight) !important;
+    box-shadow: inset 0 -3px 0 color(highlight) !important;
+}
+
+.display-4 {
     font-family: "Inknut Antiqua";
     font-weight: 600;
 }
 
 .navbar {
     text-transform: uppercase;
-};
-
-.container-fluid{
-    padding-right: 0 !important;
-    padding-left: 0 !important;
-    margin: 0 !important;
+    background-color: #fff !important;
 }
 
-body {
-    padding: 0 !important;
-    margin: 0 !important;
+li .nav-item a {
+    color: color(primary) !important;
 }
 
-html {
+.static-text {
+    color: #fff !important;
+}
+
+.container-fluid {
     padding: 0 !important;
-    margin: 0 !important;
+}
+
+.welcome div p {
+    font-size: 3.5rem;
+    background-color: color(secondary);
+}
+
+.fab,
+.fas {
+    color: color(secondary);
+}
+
+p span.typed-text {
+    font-weight: normal;
+    color: color(highlight);
+}
+
+p span.TypeCursor {
+    display: inline-block;
+    background-color: #fff;
+    margin-left: 0.1rem;
+    padding-bottom: 10px;
+    width: 3px;
+    height: 65px;
+    animation: blink 1s infinite;
+    vertical-align: text-bottom;
+}
+
+p span.typed-text.typing {
+    animation: none;
+}
+
+.footer {
+    background-color: color(highlight) !important;
+}
+
+.footer div div p .lead {
+    color: color(secondary) !important;
+    font-weight: 400 !important;
 }
 
 img {
     max-height: 100%;
     max-width: 100%;
 }
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: color(secondary) !important;
+}
+
+@keyframes blink {
+    0% {
+        background-color: #fff;
+    }
+
+    49% {
+        background-color: #fff;
+    }
+
+    50% {
+        background-color: transparent;
+    }
+
+    99% {
+        background-color: transparent;
+    }
+
+    100% {
+        background-color: #fff;
+    }
+}
+
 //Bootstrap Sass files
 @import "node_modules/bootstrap/scss/bootstrap";
-
