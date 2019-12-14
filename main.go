@@ -153,6 +153,7 @@ func (s *Server) homeHandler() http.HandlerFunc {
 				"template": htmlBase + "index.html",
 			}).Errorf("Could not execute template: %v", err)
 		}
+		w.Header().Add("Access-Control-Allow-Origin", "*")
 		renderPageTemplate(w, tmpl, p)
 
 	}
