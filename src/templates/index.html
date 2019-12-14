@@ -7,14 +7,14 @@
   <!-- <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet"> -->
   <link href="https://fonts.googleapis.com/css?family=Inknut+Antiqua:400,600|Lato:200&display=swap" rel="stylesheet">
   <script src="https://kit.fontawesome.com/f2ffa9ae34.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="/css/bootstrap.css">
+  <!-- <link rel="stylesheet" href="/css/bootstrap.css"> -->
   <link rel="stylesheet" href="/css/styles.css">
   <title>{{.}}</title>
 </head>
 {{end}}
 
 {{define "nav"}}
-<nav class="navbar navbar-expand-lg text-md-right sticky-top shadow-4">
+<nav class="navbar navbar-expand-lg bg-light upper text-md-right sticky-top shadow-4">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -22,11 +22,11 @@
   <a class="navbar-brand" href="#">Corey Van Woert</a>
   <div class="collapse navbar-collapse text-md-right" id="navbarSupportedContent">
     <ul class="navbar-nav text-md-left" id="nav-items">
-      <li class="nav-item active">
-        <a class="nav-link mx-auto" href="#">About</a>
+      <li class="nav-item active under-highlight">
+        <a class="nav-link text-primary mx-auto" href="#">About</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link mx-auto" href="#">Contact</a>
+        <a class="nav-link text-primary mx-auto" href="#">Contact</a>
       </li>
     </ul>
   </div>
@@ -34,10 +34,10 @@
 {{end}}
 
 {{ define "hero"}}
-<div class="container-fluid padding welcome">
+<div class="container-fluid px-0 mx-0 welcome">
   <div class="row my-5">
     <div class="col-12 text-center mx-0 px-0">
-      <p class="lead">
+      <p class="hero-text">
         <span class="static-text">Corey is into </span><span class="typed-text"></span><span
           class="TypeCursor text-underline">&nbsp;</span>
       </p>
@@ -54,24 +54,24 @@
 {{end}}
 
 {{ define "footer"}}
-<div class="footer mb-0 fixed-bottom">
+<div class="footer bg-highlight mb-0 fixed-bottom">
   <div class="row justify-content-center mt-3">
-    <div class="col-12 text-center">
+    <div class="footer-text col-12 text-center">
       <p class="lead">Connect with me:</p>
     </div>
   </div>
   <div class="row justify-content-center my-3">
     <div class="col-sm-6 col-md-1 text-center">
-      <a href="https://github.com/coreyvan"><i class="fab fa-github fa-2x"></i></a>
+      <a href="https://github.com/coreyvan"><i class="fab fa-github fa-2x footer-icon"></i></a>
     </div>
     <div class="col-sm-6 col-md-1 text-center">
-      <a href="https://www.linkedin.com/in/cvanwoert/"><i class="fab fa-linkedin fa-2x"></i></a>
+      <a href="https://www.linkedin.com/in/cvanwoert/"><i class="fab fa-linkedin fa-2x footer-icon"></i></a>
     </div>
     <div class="col-sm-6 col-md-1 text-center">
-      <a href="https://twitter.com/vnwrt_io"><i class="fab fa-twitter fa-2x"></i></a>
+      <a href="https://twitter.com/vnwrt_io"><i class="fab fa-twitter fa-2x footer-icon"></i></a>
     </div>
     <div class="col-sm-6 col-md-1 text-center">
-      <a href="mailto:coreyvan@protonmail.com"><i class="fas fa-envelope fa-2x"></i></a>
+      <a href="mailto:coreyvan@protonmail.com"><i class="fas fa-envelope fa-2x footer-icon"></i></a>
     </div>
   </div>
 </div>
@@ -86,7 +86,7 @@
 {{template "head" .Title}}
 
 <body>
-  <div id="container" class="container-fluid mx-0">
+  <div id="container" class="container-fluid px-0 mx-0">
     {{ template "nav"}}
     {{ template "hero"}}
     {{ template "footer"}}
