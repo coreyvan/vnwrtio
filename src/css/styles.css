@@ -27,6 +27,14 @@
 .hero-text {
   font-size: 3.5rem; }
 
+.hero-subtext {
+  font-size: 1.25rem;
+  color: #fff; }
+
+.text-emphasis {
+  font-weight: bold;
+  color: #ce9256; }
+
 .footer-icon {
   color: #1a3439; }
 
