@@ -21,40 +21,15 @@
   <a class="navbar-brand" href="#">Corey Van Woert</a>
   <div class="collapse navbar-collapse text-md-right" id="navbarSupportedContent">
     <ul class="navbar-nav text-md-left" id="nav-items">
-      <li class="nav-item active under-highlight">
+      <li class="nav-item">
         <a class="nav-link text-primary mx-auto" href="/">About</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item active under-highlight">
         <a class="nav-link text-primary mx-auto" href="/contact">Contact</a>
       </li>
     </ul>
   </div>
 </nav>
-{{end}}
-
-{{ define "hero"}}
-<div class="container-fluid">
-  <div class="row justify-content-center">
-      <div class="p-2 col-auto">
-        <p class="hero-text">
-          <span class="static-text">Corey is into</span>
-        </p>
-      </div>
-      <div class="w-100 d-block d-md-none"></div>
-      <div class="p-2 col-auto">
-        <p class="hero-text">
-          <span class="typed-text"></span><span class="TypeCursor text-underline"> &nbsp;</span>
-        </p>
-      </div>
-  </div>
-  <div class="row my-3">
-    <div class="col-10 col-md-8 col-lg-6 text-left text-sm-center mx-auto">
-      <p class="hero-subtext">
-        <span class="text-emphasis">Hi, I'm Corey Van Woert.</span> I’m an engineer who wants to create technology that shapes the world in a positive way. I believe that building bridges is as important as forging new paths. Each day I grow, seek better ways, and live in service of others.
-      </p>
-    </div>
-  </div>
-</div>
 {{end}}
 
 {{define "js"}}
@@ -89,7 +64,6 @@
 {{end}}
 
 
-
 <!-- BASE HTML TEMPLATES -->
 <!doctype html>
 <html lang="en">
@@ -99,7 +73,6 @@
 <body>
   <div id="container" class="container-fluid px-0 mx-0">
     {{ template "nav"}}
-    {{ template "hero"}}
     {{ template "footer"}}
   </div>
   <!-- Optional JavaScript -->
