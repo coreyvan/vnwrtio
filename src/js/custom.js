@@ -27,7 +27,7 @@ function randomIntFromInterval(min, max) { // min and max included
 const TypingText = document.querySelector(".typed-text");
 const AutoTyping = document.querySelector(".TypeCursor");
 
-const textArray = ["stoicism.", "travel.", "dogs.", "microservices.", "security.", "code.", "Go.", "Docker.", "jiu jitsu.", "networking.", "hiking.", "swimming.", "AWS.", "agile.", "terraform.", "cryptography."];
+const textArray = ["sci-fi","puzzles","stoicism.", "travel.", "dogs.", "microservices.", "security.", "code.", "Go.", "Docker.", "jiu jitsu.", "networking.", "hiking.", "swimming.", "AWS.", "agile.", "terraform.", "cryptography."];
 const typingDelay = 100;
 const erasingDelay = 80;
 const newTextDelay = 1500;

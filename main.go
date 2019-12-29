@@ -24,6 +24,8 @@ func init() {
 
 }
 func main() {
+	certPath := os.Getenv("VNWRT_CERT_PATH")
+	privKeyPath := os.Getenv("VNWRT_PRIVKEY_PATH")
 
 	log.Formatter = new(logrus.TextFormatter)
 	log.Formatter.(*logrus.TextFormatter).FullTimestamp = true
@@ -34,12 +36,13 @@ func main() {
 	go s.handleSignals()
 	s.routes()
 
+	go http.ListenAndServe(":80", http.HandlerFunc(redirectTLS))
 	log.WithFields(logrus.Fields{
 		"package":  "main",
 		"function": "main",
 		"port":     port,
 	}).Info("Started server")
-	err := http.ListenAndServeTLS(port, "/certs/live/vnwrt.io/fullchain.pem", "/certs/live/vnwrt.io/privkey.pem", s.router)
+	err := http.ListenAndServeTLS(port, certPath, privKeyPath, s.router)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"package":  "main",
@@ -176,6 +179,10 @@ func (s *Server) contactHandler() http.HandlerFunc {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		renderPageTemplate(w, tmpl, p)
 	}
+}
+
+func redirectTLS(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 }
 
 func renderPageTemplate(w http.ResponseWriter, tmpl *template.Template, p Page) {
