@@ -28,7 +28,7 @@ func main() {
 	log.Formatter = new(logrus.TextFormatter)
 	log.Formatter.(*logrus.TextFormatter).FullTimestamp = true
 
-	port := ":80"
+	port := ":443"
 	s := NewServer()
 
 	go s.handleSignals()
@@ -39,7 +39,7 @@ func main() {
 		"function": "main",
 		"port":     port,
 	}).Info("Started server")
-	err := http.ListenAndServe(port, s.router)
+	err := http.ListenAndServeTLS(port, "/certs/live/vnwrt.io/fullchain.pem", "/certs/live/vnwrt.io/privkey.pem", s.router)
 	if err != nil {
 		log.WithFields(logrus.Fields{
 			"package":  "main",
@@ -60,10 +60,11 @@ func NewServer() *Server {
 	return &Server{router: mux}
 }
 
+// Define routes
 func (s *Server) routes() {
-	s.router.Handle("/contact", s.contactHandler())
-	s.router.Handle("/", s.homeHandler())
-	s.router.Handle("/{res:css|js}/{file}", s.resourceHandler())
+	s.router.Handle("/contact", s.contactHandler()).Methods("GET")
+	s.router.Handle("/", s.homeHandler()).Methods("GET")
+	s.router.Handle("/{res:css|js}/{file}", s.resourceHandler()).Methods("GET")
 }
 
 // HandleSignals handles os signals
@@ -122,6 +123,7 @@ func (s *Server) homeHandler() http.HandlerFunc {
 			"package":  "main",
 			"function": "homeHandler",
 			"method":   r.Method,
+			"source":   r.RemoteAddr,
 		}).Info("Request to ", r.URL.Path)
 		p := Page{Title: "Corey Van Woert"}
 		tmpl, err := template.ParseFiles(htmlBase + "index.html")

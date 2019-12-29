@@ -4,3 +4,5 @@
 !Dockerfile
 pages/
 node_modules
+*.key
+*.crt
