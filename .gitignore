@@ -6,3 +6,4 @@ pages/
 node_modules
 *.key
 *.crt
+certs/
