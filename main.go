@@ -68,6 +68,7 @@ func (s *Server) routes() {
 	s.router.Handle("/contact", s.contactHandler()).Methods("GET")
 	s.router.Handle("/", s.homeHandler()).Methods("GET")
 	s.router.Handle("/{res:css|js}/{file}", s.resourceHandler()).Methods("GET")
+	s.router.Handle("/favicon.ico", s.faviconHandler()).Methods("GET")
 }
 
 // HandleSignals handles os signals
@@ -181,6 +182,11 @@ func (s *Server) contactHandler() http.HandlerFunc {
 	}
 }
 
+func (s *Server) faviconHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, assetsBase+"favicon.ico")
+	}
+}
 func redirectTLS(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 }

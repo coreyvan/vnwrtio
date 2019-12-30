@@ -27,6 +27,7 @@ COPY --from=builder /vnwrtio/src/*.css ./src/css/
 COPY --from=builder /vnwrtio/src/*.js ./src/js/
 COPY --from=builder /vnwrtio/src/*.html ./src/templates/
 COPY --from=builder /vnwrtio/src/*.jpg ./src/assets/
+COPY --from=builder /vnwrtio/src/*.ico ./src/assets/
 
 EXPOSE 80
 ENTRYPOINT ["./server"]
