@@ -2,6 +2,8 @@ package main
 
 import (
 	"html/template"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,7 +19,7 @@ var (
 	cssBase    = "./src/css/"
 	jsBase     = "./src/js/"
 	assetsBase = "./src/assets/"
-	log        = logrus.New()
+	logger     = logrus.New()
 )
 
 func init() {
@@ -27,8 +29,8 @@ func main() {
 	certPath := os.Getenv("VNWRT_CERT_PATH")
 	privKeyPath := os.Getenv("VNWRT_PRIVKEY_PATH")
 
-	log.Formatter = new(logrus.TextFormatter)
-	log.Formatter.(*logrus.TextFormatter).FullTimestamp = true
+	logger.Formatter = new(logrus.TextFormatter)
+	logger.Formatter.(*logrus.TextFormatter).FullTimestamp = true
 
 	port := ":443"
 	s := NewServer()
@@ -37,14 +39,18 @@ func main() {
 	s.routes()
 
 	go http.ListenAndServe(":80", http.HandlerFunc(redirectTLS))
-	log.WithFields(logrus.Fields{
+	logger.WithFields(logrus.Fields{
 		"package":  "main",
 		"function": "main",
 		"port":     port,
 	}).Info("Started server")
-	err := http.ListenAndServeTLS(port, certPath, privKeyPath, s.router)
+
+	errLog := log.New(ioutil.Discard, "", 0)
+	srv := &http.Server{Addr: port, Handler: s.router, ErrorLog: errLog}
+
+	err := srv.ListenAndServeTLS(certPath, privKeyPath)
 	if err != nil {
-		log.WithFields(logrus.Fields{
+		logger.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "main",
 			"err":      err,
@@ -66,6 +72,7 @@ func NewServer() *Server {
 // Define routes
 func (s *Server) routes() {
 	s.router.Handle("/contact", s.contactHandler()).Methods("GET")
+	s.router.Handle("/", s.badSchemeHandler()).Schemes("http")
 	s.router.Handle("/", s.homeHandler()).Methods("GET")
 	s.router.Handle("/{res:css|js}/{file}", s.resourceHandler()).Methods("GET")
 	s.router.Handle("/favicon.ico", s.faviconHandler()).Methods("GET")
@@ -88,14 +95,14 @@ func (s *Server) handleSignals() {
 			s := <-signalChan
 			switch s {
 			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				log.WithFields(logrus.Fields{
+				logger.WithFields(logrus.Fields{
 					"package":  "main",
 					"function": "handleSignals",
 					"signal":   s,
 				}).Info("Received shutdown signal")
 				exitChan <- 0
 			default:
-				log.WithFields(logrus.Fields{
+				logger.WithFields(logrus.Fields{
 					"package":  "main",
 					"function": "handleSignals",
 					"signal":   s,
@@ -116,6 +123,12 @@ func (s *Server) defaultHandler() http.HandlerFunc {
 
 }
 
+func (s *Server) badSchemeHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+	}
+}
+
 // Page data model for HTML page
 type Page struct {
 	Title string
@@ -123,7 +136,7 @@ type Page struct {
 
 func (s *Server) homeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.WithFields(logrus.Fields{
+		logger.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "homeHandler",
 			"method":   r.Method,
@@ -132,7 +145,7 @@ func (s *Server) homeHandler() http.HandlerFunc {
 		p := Page{Title: "Corey Van Woert"}
 		tmpl, err := template.ParseFiles(htmlBase + "index.html")
 		if err != nil {
-			log.WithFields(logrus.Fields{
+			logger.WithFields(logrus.Fields{
 				"package":  "main",
 				"function": "homeHandler",
 				"template": htmlBase + "index.html",
@@ -147,7 +160,7 @@ func (s *Server) homeHandler() http.HandlerFunc {
 
 func (s *Server) resourceHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.WithFields(logrus.Fields{
+		logger.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "resourceHandler",
 			"method":   r.Method,
@@ -162,7 +175,7 @@ func (s *Server) resourceHandler() http.HandlerFunc {
 
 func (s *Server) contactHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.WithFields(logrus.Fields{
+		logger.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "contactHandler",
 			"method":   r.Method,
@@ -170,7 +183,7 @@ func (s *Server) contactHandler() http.HandlerFunc {
 		p := Page{Title: "Contact - Corey Van Woert"}
 		tmpl, err := template.ParseFiles(htmlBase + "contact.html")
 		if err != nil {
-			log.WithFields(logrus.Fields{
+			logger.WithFields(logrus.Fields{
 				"package":  "main",
 				"function": "contactHandler",
 				"template": htmlBase + "contact.html",
@@ -194,7 +207,7 @@ func redirectTLS(w http.ResponseWriter, r *http.Request) {
 func renderPageTemplate(w http.ResponseWriter, tmpl *template.Template, p Page) {
 	err := tmpl.Execute(w, p)
 	if err != nil {
-		log.WithFields(logrus.Fields{
+		logger.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "renderPageTemplate",
 			"template": tmpl,
