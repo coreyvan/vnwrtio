@@ -38,16 +38,18 @@ func main() {
 	go s.handleSignals()
 	s.routes()
 
+	errLog := log.New(ioutil.Discard, "", 0)
+	srv := &http.Server{Addr: port, Handler: s.router, ErrorLog: errLog}
+
+	// Start go routine listening on HTTP port 80 that redirects to HTTPS
 	go http.ListenAndServe(":80", http.HandlerFunc(redirectTLS))
+
+	// Start listening HTTPS on port 443
 	logger.WithFields(logrus.Fields{
 		"package":  "main",
 		"function": "main",
 		"port":     port,
-	}).Info("Started server")
-
-	errLog := log.New(ioutil.Discard, "", 0)
-	srv := &http.Server{Addr: port, Handler: s.router, ErrorLog: errLog}
-
+	}).Info("Started server listening on port", port)
 	err := srv.ListenAndServeTLS(certPath, privKeyPath)
 	if err != nil {
 		logger.WithFields(logrus.Fields{
@@ -114,13 +116,6 @@ func (s *Server) handleSignals() {
 
 	code := <-exitChan
 	os.Exit(code)
-}
-
-func (s *Server) defaultHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-	}
-
 }
 
 func (s *Server) badSchemeHandler() http.HandlerFunc {
@@ -201,6 +196,12 @@ func (s *Server) faviconHandler() http.HandlerFunc {
 	}
 }
 func redirectTLS(w http.ResponseWriter, r *http.Request) {
+	logger.WithFields(logrus.Fields{
+		"package":  "main",
+		"function": "redirectTLS",
+		"method":   r.Method,
+		"source":   r.RemoteAddr,
+	}).Info("HTTP request redirected to HTTPS")
 	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 }
 
