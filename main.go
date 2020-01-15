@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strings"
 	"syscall"
 
 	"github.com/gorilla/mux"
@@ -38,8 +40,9 @@ func main() {
 	go s.handleSignals()
 	s.routes()
 
-	errLog := log.New(ioutil.Discard, "", 0)
-	srv := &http.Server{Addr: port, Handler: s.router, ErrorLog: errLog}
+	// Create a logger that ignores errors printed by the std library
+	ignoreLogger := log.New(ioutil.Discard, "", 0)
+	srv := &http.Server{Addr: port, Handler: s.router, ErrorLog: ignoreLogger}
 
 	// Start go routine listening on HTTP port 80 that redirects to HTTPS
 	go http.ListenAndServe(":80", http.HandlerFunc(redirectTLS))
@@ -73,11 +76,11 @@ func NewServer() *Server {
 
 // Define routes
 func (s *Server) routes() {
-	s.router.Handle("/contact", s.contactHandler()).Methods("GET")
-	s.router.Handle("/", s.badSchemeHandler()).Schemes("http")
-	s.router.Handle("/", s.homeHandler()).Methods("GET")
+	s.router.Handle("/{page:contact|sharks}", s.pageHandler()).Methods("GET")
 	s.router.Handle("/{res:css|js}/{file}", s.resourceHandler()).Methods("GET")
 	s.router.Handle("/favicon.ico", s.faviconHandler()).Methods("GET")
+	s.router.Handle("/", s.badSchemeHandler()).Schemes("http")
+	s.router.Handle("/", s.homeHandler()).Methods("GET")
 }
 
 // HandleSignals handles os signals
@@ -95,27 +98,31 @@ func (s *Server) handleSignals() {
 	go func() {
 		for {
 			s := <-signalChan
-			switch s {
-			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				logger.WithFields(logrus.Fields{
-					"package":  "main",
-					"function": "handleSignals",
-					"signal":   s,
-				}).Info("Received shutdown signal")
-				exitChan <- 0
-			default:
-				logger.WithFields(logrus.Fields{
-					"package":  "main",
-					"function": "handleSignals",
-					"signal":   s,
-				}).Error("Received unknown signal")
-				exitChan <- 1
-			}
+			processSignal(s, exitChan)
 		}
 	}()
 
 	code := <-exitChan
 	os.Exit(code)
+}
+
+func processSignal(s os.Signal, exit chan int) {
+	switch s {
+	case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
+		logger.WithFields(logrus.Fields{
+			"package":  "main",
+			"function": "processSignal",
+			"signal":   s,
+		}).Info("Received shutdown signal")
+		exit <- 0
+	default:
+		logger.WithFields(logrus.Fields{
+			"package":  "main",
+			"function": "processSignals",
+			"signal":   s,
+		}).Error("Received unknown signal")
+		exit <- 1
+	}
 }
 
 func (s *Server) badSchemeHandler() http.HandlerFunc {
@@ -131,6 +138,7 @@ type Page struct {
 
 func (s *Server) homeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		logger.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "homeHandler",
@@ -138,8 +146,12 @@ func (s *Server) homeHandler() http.HandlerFunc {
 			"source":   r.RemoteAddr,
 		}).Info("Request to ", r.URL.Path)
 		p := Page{Title: "Corey Van Woert"}
+
+		// Parse HTML template
 		tmpl, err := template.ParseFiles(htmlBase + "index.html")
 		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
 			logger.WithFields(logrus.Fields{
 				"package":  "main",
 				"function": "homeHandler",
@@ -147,6 +159,8 @@ func (s *Server) homeHandler() http.HandlerFunc {
 				"source":   r.RemoteAddr,
 			}).Errorf("Could not execute template: %v", err)
 		}
+
+		// Write to client
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		renderPageTemplate(w, tmpl, p)
 
@@ -161,30 +175,72 @@ func (s *Server) resourceHandler() http.HandlerFunc {
 			"method":   r.Method,
 			"source":   r.RemoteAddr,
 		}).Info("Request to ", r.URL.Path)
+
+		// Get variables from path, res will only be an item in the patterns matched in the route
 		vars := mux.Vars(r)
 		t := vars["res"]
 		f := vars["file"]
+		if containsDotDot(f) {
+			// Reject requests with ..'s in the path to avoid directory traversal attacks
+			// technically http.ServeFile does this by default but don't take a dependency on it
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+
+			logger.WithFields(logrus.Fields{
+				"package":  "main",
+				"function": "resourceHandler",
+				"method":   r.Method,
+				"source":   r.RemoteAddr,
+				"URL":      r.URL.Path,
+			}).Error("URL path contained ..")
+		}
+
+		// Serve file based on captured path
 		http.ServeFile(w, r, path.Join("src", t, f))
 	}
 }
 
-func (s *Server) contactHandler() http.HandlerFunc {
+func containsDotDot(v string) bool {
+	if !strings.Contains(v, "..") {
+		return false
+	}
+	for _, ent := range strings.FieldsFunc(v, isSlashRune) {
+		if ent == ".." {
+			return true
+		}
+	}
+	return false
+}
+
+func isSlashRune(r rune) bool { return r == '/' || r == '\\' }
+
+func (s *Server) pageHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.WithFields(logrus.Fields{
 			"package":  "main",
-			"function": "contactHandler",
+			"function": "pageHandler",
 			"method":   r.Method,
+			"source":   r.RemoteAddr,
 		}).Info("Request to ", r.URL.Path)
-		p := Page{Title: "Contact - Corey Van Woert"}
-		tmpl, err := template.ParseFiles(htmlBase + "contact.html")
+
+		vars := mux.Vars(r)
+		page := vars["page"]
+		path := htmlBase + page + ".html"
+		title := fmt.Sprintf("%s - Corey Van Woert", strings.Title(page))
+
+		p := Page{Title: title}
+
+		tmpl, err := template.ParseFiles(path)
 		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			logger.WithFields(logrus.Fields{
 				"package":  "main",
-				"function": "contactHandler",
-				"template": htmlBase + "contact.html",
+				"function": "pageHandler",
+				"template": path,
 				"source":   r.RemoteAddr,
 			}).Errorf("Could not execute template: %v", err)
+			return
 		}
+
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		renderPageTemplate(w, tmpl, p)
 	}
@@ -192,7 +248,8 @@ func (s *Server) contactHandler() http.HandlerFunc {
 
 func (s *Server) faviconHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, assetsBase+"favicon.ico")
+		path := assetsBase + "favicon.ico"
+		http.ServeFile(w, r, path)
 	}
 }
 func redirectTLS(w http.ResponseWriter, r *http.Request) {
@@ -208,12 +265,13 @@ func redirectTLS(w http.ResponseWriter, r *http.Request) {
 func renderPageTemplate(w http.ResponseWriter, tmpl *template.Template, p Page) {
 	err := tmpl.Execute(w, p)
 	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+
 		logger.WithFields(logrus.Fields{
 			"package":  "main",
 			"function": "renderPageTemplate",
 			"template": tmpl,
 			"err":      err,
 		}).Error("Error while executing template")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
